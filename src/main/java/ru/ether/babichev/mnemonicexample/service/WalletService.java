@@ -1,9 +1,10 @@
 package ru.ether.babichev.mnemonicexample.service;
 
-import org.bitcoinj.crypto.*;
+import org.bitcoinj.crypto.ChildNumber;
+import org.bitcoinj.crypto.DeterministicKey;
+import org.bitcoinj.crypto.HDKeyDerivation;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.springframework.stereotype.Service;
-import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
@@ -11,7 +12,6 @@ import org.web3j.protocol.http.HttpService;
 import ru.ether.babichev.mnemonicexample.model.HDWallet;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
