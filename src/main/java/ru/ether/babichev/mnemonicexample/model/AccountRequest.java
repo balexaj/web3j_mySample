@@ -2,10 +2,9 @@ package ru.ether.babichev.mnemonicexample.model;
 
 import java.util.List;
 
-public class MnemonicModel {
-
+public class AccountRequest {
     private List<String> mnemonics;
-    private String password;
+    private int countAccounts;
 
     public List<String> getMnemonics() {
         return mnemonics;
@@ -15,11 +14,11 @@ public class MnemonicModel {
         this.mnemonics = mnemonics;
     }
 
-    public String getPassword() {
-        return password;
+    public int getCountAccounts() {
+        return countAccounts;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setCountAccounts(int countAccounts) {
+        this.countAccounts = countAccounts;
     }
 }

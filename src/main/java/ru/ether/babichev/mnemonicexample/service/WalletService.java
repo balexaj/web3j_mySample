@@ -1,61 +1,55 @@
 package ru.ether.babichev.mnemonicexample.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bitcoinj.crypto.*;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.springframework.stereotype.Service;
-import org.web3j.crypto.CipherException;
-import org.web3j.crypto.ECKeyPair;
-import org.web3j.crypto.Wallet;
-import org.web3j.crypto.WalletFile;
-import org.web3j.protocol.ObjectMapperFactory;
-import org.web3j.utils.Numeric;
+import org.web3j.crypto.*;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.EthGetBalance;
+import org.web3j.protocol.http.HttpService;
+import ru.ether.babichev.mnemonicexample.model.HDWallet;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class WalletService {
 
-    public List<String> getFiveAddresses(List<String> mnemonics, String password){
-        if (mnemonics.size() != 12 || password.length() < 8){
-            return null;
-        }
+    public HDWallet getHDWallet(List<String> mnemonics){
         long creationTimeSeconds = System.currentTimeMillis() / 1000;
         DeterministicSeed ds = new DeterministicSeed(mnemonics, null, "", creationTimeSeconds);
-
         byte[] seedBytes = ds.getSeedBytes();
         try {
-//            byte[] mnemonicSeedBytes = MnemonicCode.INSTANCE.toEntropy(mnemonics);
-//            ECKeyPair mnemonicKeyPair = ECKeyPair.create(mnemonicSeedBytes);
-//            WalletFile walletFileRoot = Wallet.createLight(password, mnemonicKeyPair);
-//            ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
-//            String jsonStr = objectMapper.writeValueAsString(walletFileRoot);
-//            WalletFile checkWalletFile = objectMapper.readValue(jsonStr, WalletFile.class);
-//            ECKeyPair ecKeyPair = Wallet.decrypt(password, checkWalletFile);
-//            byte[] checkMnemonicSeedBytes = Numeric.hexStringToByteArray(ecKeyPair.getPrivateKey().toString(16));
-//            List<String> checkMnemonic = MnemonicCode.INSTANCE.toMnemonic(checkMnemonicSeedBytes);
-
-
             if (seedBytes == null)
                 return null;
+
             DeterministicKey dkKey = HDKeyDerivation.createMasterPrivateKey(seedBytes);
             dkKey = HDKeyDerivation.deriveChildKey(dkKey, new ChildNumber(44, true));
             dkKey = HDKeyDerivation.deriveChildKey(dkKey, new ChildNumber(60, true));
             dkKey = HDKeyDerivation.deriveChildKey(dkKey, new ChildNumber(0, true));
             dkKey = HDKeyDerivation.deriveChildKey(dkKey, new ChildNumber(0, false));
 
-            ArrayList<String> addresses = new ArrayList<>();
-
-            for (int i = 0; i < 5; i++) {
-                DeterministicKey key = HDKeyDerivation.deriveChildKey(dkKey, new ChildNumber(i, false));
-                ECKeyPair keyPair = ECKeyPair.create(key.getPrivKeyBytes());
-                WalletFile walletFile = Wallet.createLight(password, keyPair);
-                addresses.add(walletFile.getAddress());
-            }
-            return addresses;
-
+            return new HDWallet(dkKey);
         } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public BigInteger getBalance(String address){
+        Web3j web3 = Web3j.build(new HttpService("https://rinkeby.infura.io/6rfE9FJUqXyHUPjXooDn"));
+        EthGetBalance ethGetBalance = null;
+        try {
+            ethGetBalance = web3
+                    .ethGetBalance("0x"+address, DefaultBlockParameterName.LATEST)
+                    .sendAsync()
+                    .get();
+            return ethGetBalance.getBalance();
+
+        } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
         return null;

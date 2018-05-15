@@ -4,13 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import ru.ether.babichev.mnemonicexample.model.MnemonicModel;
+import ru.ether.babichev.mnemonicexample.model.AccountRequest;
+import ru.ether.babichev.mnemonicexample.model.AccountResponce;
+import ru.ether.babichev.mnemonicexample.model.HDWallet;
 import ru.ether.babichev.mnemonicexample.service.WalletService;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 public class AccountController {
@@ -20,10 +20,15 @@ public class AccountController {
 
     @RequestMapping(value = "/get_accounts",
         method = RequestMethod.POST,
-//        consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public List<String> getFiveAccount(@RequestBody MnemonicModel payload){
-        return walletService.getFiveAddresses(payload.getMnemonics(), payload.getPassword());
+    public List<AccountResponce> getAccounts(@RequestBody AccountRequest request){
+        HDWallet wallet = walletService.getHDWallet(request.getMnemonics());
+        List<AccountResponce> responce = new ArrayList<>();
+        for (int i = 0; i < request.getCountAccounts(); i++) {
+            String address = wallet.getAddress(i);
+            responce.add(new AccountResponce(address, walletService.getBalance(address)));
+        }
+        return responce;
     }
 }
