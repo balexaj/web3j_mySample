@@ -8,15 +8,49 @@ import org.web3j.crypto.Keys;
 
 public class HDWallet {
 
-    DeterministicKey dkKey;
+    private DeterministicKey dkKey;
+    private ECKeyPair keyPair;
+    private String address;
 
     public HDWallet(DeterministicKey dkKey) {
         this.dkKey = dkKey;
     }
 
-    public String getAddress(int n){
+    public HDWallet getChildWallet(int n){
         DeterministicKey key = HDKeyDerivation.deriveChildKey(dkKey, new ChildNumber(n, false));
         ECKeyPair keyPair = ECKeyPair.create(key.getPrivKeyBytes());
-        return Keys.getAddress(keyPair);
+        String address = Keys.getAddress(keyPair);
+        HDWallet wallet = new HDWallet(key, keyPair, address);
+        return wallet;
+    }
+
+    public HDWallet(DeterministicKey dkKey, ECKeyPair keyPair, String address) {
+        this.dkKey = dkKey;
+        this.keyPair = keyPair;
+        this.address = address;
+    }
+
+    public DeterministicKey getDkKey() {
+        return dkKey;
+    }
+
+    public void setDkKey(DeterministicKey dkKey) {
+        this.dkKey = dkKey;
+    }
+
+    public ECKeyPair getKeyPair() {
+        return keyPair;
+    }
+
+    public void setKeyPair(ECKeyPair keyPair) {
+        this.keyPair = keyPair;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }
